@@ -1,0 +1,13 @@
+{
+ "default": "v1.9.0",
+ "targets": {
+  "v1.9.0": {
+   "image": "openzeppelin/openzeppelin-relayer:v1.9.0",
+   "digest": "sha256:3ceb3986c636cd41c8eadc685a50c8e3df643206f039485694e41c6922d47fae"
+  },
+  "v1.8.0": {
+   "image": "openzeppelin/openzeppelin-relayer:v1.8.0",
+   "digest": "sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77"
+  }
+ }
+}

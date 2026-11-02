@@ -1,0 +1,59 @@
+{
+  "relayers": [
+    {
+      "id": "keeper",
+      "name": "keeper",
+      "network": "sepolia",
+      "paused": false,
+      "notification_id": "missing-hook",
+      "signer_id": "nope",
+      "network_type": "evm",
+      "policies": {
+        "gas_price_cap": 800000000
+      }
+    }
+  ],
+  "signers": [
+    {
+      "id": "local0",
+      "type": "local",
+      "config": {
+        "path": "config/keys/k.json",
+        "passphrase": {
+          "type": "plain",
+          "value": "hunter22"
+        }
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "id": "ops",
+      "type": "webhook",
+      "url": "https://hooks.example/relayer",
+      "signing_key": {
+        "type": "plain",
+        "value": "short-key"
+      }
+    }
+  ],
+  "networks": [
+    {
+      "type": "evm",
+      "network": "sepolia",
+      "chain_id": 11155111,
+      "required_confirmations": 1,
+      "symbol": "ETH",
+      "rpc_urls": [
+        "https://rpc-a.example"
+      ],
+      "explorer_urls": [],
+      "average_blocktime_ms": 12000,
+      "is_testnet": true,
+      "features": [
+        "eip1559"
+      ]
+    }
+  ],
+  "plugins": []
+}

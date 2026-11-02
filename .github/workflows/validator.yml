@@ -1,0 +1,51 @@
+name: validator
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s validator/tests -v
+      - name: Install as a package and run the command
+        run: |
+          python3 -m venv /tmp/v
+          /tmp/v/bin/pip install -q ./validator
+          /tmp/v/bin/nonceworks-validate --version
+          /tmp/v/bin/nonceworks-validate scenarios/*/config.json
+  action:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: The Action on a valid config passes
+        id: ok
+        uses: ./
+        with:
+          path: validator/tests/fixtures/relayer-ok
+      - name: The Action on a broken config fails
+        id: bad
+        continue-on-error: true
+        uses: ./
+        with:
+          path: |
+            validator/tests/fixtures/relayer-bad
+            validator/tests/fixtures/monitor-bad
+      - name: Check the outcomes
+        env:
+          OK_ERRORS: ${{ steps.ok.outputs.errors }}
+          OK_WARNINGS: ${{ steps.ok.outputs.warnings }}
+          BAD_OUTCOME: ${{ steps.bad.outcome }}
+          BAD_ERRORS: ${{ steps.bad.outputs.errors }}
+        run: |
+          echo "ok: errors=$OK_ERRORS warnings=$OK_WARNINGS; bad: outcome=$BAD_OUTCOME errors=$BAD_ERRORS"
+          test "$OK_ERRORS" = 0
+          test "$OK_WARNINGS" = 1
+          test "$BAD_OUTCOME" = failure
+          test "$BAD_ERRORS" = 4

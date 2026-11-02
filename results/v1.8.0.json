@@ -1,0 +1,552 @@
+{
+ "relayer_version": "v1.8.0",
+ "image": "openzeppelin/openzeppelin-relayer:v1.8.0",
+ "digest": "sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+ "service_version": "1.8.0",
+ "run": {
+  "at": "2026-11-02T03:31:16Z",
+  "where": "local, release.yml under act"
+ },
+ "scenarios": {
+  "817": {
+   "scenario": "817",
+   "issue": "https://github.com/OpenZeppelin/openzeppelin-relayer/issues/817",
+   "title": "Mined transaction marked Failed after a stale receipt read",
+   "outcome": "reproduces",
+   "summary": "Relayer finalised the transaction as failed (Nonce 0 consumed externally (on-chain nonce: 1). No matching transaction hash found on-chain.) although anvil mined it with status 1 in block 15",
+   "relayer": {
+    "version": "v1.8.0",
+    "image": "openzeppelin/openzeppelin-relayer:v1.8.0@sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "digest": "sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "service_version": "1.8.0"
+   },
+   "started_at": "2026-11-02T03:09:01Z",
+   "finished_at": "2026-11-02T03:12:53Z",
+   "duration_s": 231,
+   "log_counts": {
+    "transaction not yet mined": 16,
+    "transaction has been pending for too long, resubmitting": 1,
+    "nonce too low": 3,
+    "scheduling nonce recovery": 1,
+    "nonce consumed externally": 1
+   },
+   "observed": {
+    "final_status": "failed",
+    "status_reason": "Nonce 0 consumed externally (on-chain nonce: 1). No matching transaction hash found on-chain.",
+    "nonce": 0,
+    "hashes_recorded": 1,
+    "anvil_receipt": {
+     "hash": "0xd5d94690e95c2905bb099ad8fb96958acac68f74258920954658954e21fe1548",
+     "status": 1,
+     "block": 15,
+     "seconds_after_submit": 10,
+     "sender_nonce_after": 1
+    },
+    "seconds_to_final": 190,
+    "proxy": {
+     "receipt_calls": 17,
+     "receipt_hidden": 17,
+     "receipt_passed": 0,
+     "send_raw": 2,
+     "send_ok": 1,
+     "send_other_error": 1,
+     "send_error_messages": [
+      "nonce too low"
+     ]
+    }
+   }
+  },
+  "912": {
+   "scenario": "912",
+   "issue": "https://github.com/OpenZeppelin/openzeppelin-relayer/issues/912",
+   "title": "Sign endpoints skip whitelist_receivers",
+   "outcome": "reproduces",
+   "summary": "whitelist_receivers refused a transaction to account #2 (HTTP 400), yet /sign-typed-data signed an EIP-3009 authorization that moved the Relayer address's 1000 tokens to it",
+   "relayer": {
+    "version": "v1.8.0",
+    "image": "openzeppelin/openzeppelin-relayer:v1.8.0@sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "digest": "sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "service_version": "1.8.0"
+   },
+   "started_at": "2026-11-02T03:09:02Z",
+   "finished_at": "2026-11-02T03:09:39Z",
+   "duration_s": 37,
+   "log_counts": {
+    "Transaction target address is not whitelisted": 3
+   },
+   "observed": {
+    "token": "0x700b6A60ce7EaaEA56F065753d8dcB9653dbAD35",
+    "whitelist_receivers": [
+     "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    ],
+    "control_transaction": {
+     "http_status": 400,
+     "message": "Transaction target address is not whitelisted"
+    },
+    "sign_typed_data_http_status": 200,
+    "sign_typed_data_error": null,
+    "transfer_with_authorization": {
+     "submitted_by": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+     "tx": "0x461c1d8d947604aa01987fb327b0727beb2fc4cdc5f9177a9072f181d7901411",
+     "status": 1
+    },
+    "balances_after": {
+     "relayer_address": 0,
+     "account_2": 1000000000
+    }
+   }
+  },
+  "843": {
+   "scenario": "843",
+   "issue": "https://github.com/OpenZeppelin/openzeppelin-relayer/issues/843",
+   "title": "Nonce too high jam that recovery never clears",
+   "outcome": "reproduces",
+   "summary": "drift stayed between 33 and 33 over the last 300 s of intake after a 60 s send outage; queue empty 90 s after intake stopped",
+   "relayer": {
+    "version": "v1.8.0",
+    "image": "openzeppelin/openzeppelin-relayer:v1.8.0@sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "digest": "sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "service_version": "1.8.0"
+   },
+   "started_at": "2026-11-02T03:09:03Z",
+   "finished_at": "2026-11-02T03:23:11Z",
+   "duration_s": 848,
+   "log_counts": {
+    "max attempts reached": 57,
+    "no nonce gaps detected": 218,
+    "rewound nonce counter": 0,
+    "nonce gaps confirmed below tx": 0,
+    "reclaiming nonce slots": 0,
+    "nonce too high": 2606,
+    "HTTP error 503": 405
+   },
+   "observed": {
+    "submitted": 360,
+    "refused_by_api": 0,
+    "drift_last_window": [
+     33,
+     33,
+     33,
+     33,
+     33,
+     33,
+     33,
+     33,
+     33,
+     33
+    ],
+    "drift_min_last_window": 33,
+    "drift_max_last_window": 33,
+    "queue_empty_seconds_after_intake": 90,
+    "final_statuses": {
+     "confirmed": 360
+    },
+    "final_sent_null_sent_at": 0,
+    "proxy": {
+     "send_raw": 1840,
+     "send_ok": 360,
+     "send_503": 177,
+     "send_nonce_too_high": 1303,
+     "send_other_error": 0
+    },
+    "samples": [
+     {
+      "t": 30,
+      "phase": "intake",
+      "on_chain_nonce": 15,
+      "relayer_next_nonce": 15,
+      "drift": 0,
+      "statuses": {
+       "pending": 1,
+       "submitted": 4,
+       "confirmed": 11
+      },
+      "sent_null_sent_at": 0
+     },
+     {
+      "t": 60,
+      "phase": "intake",
+      "on_chain_nonce": 20,
+      "relayer_next_nonce": 30,
+      "drift": 10,
+      "statuses": {
+       "pending": 1,
+       "sent": 10,
+       "confirmed": 20
+      },
+      "sent_null_sent_at": 10
+     },
+     {
+      "t": 90,
+      "phase": "intake",
+      "on_chain_nonce": 20,
+      "relayer_next_nonce": 45,
+      "drift": 25,
+      "statuses": {
+       "pending": 1,
+       "sent": 25,
+       "confirmed": 20
+      },
+      "sent_null_sent_at": 25
+     },
+     {
+      "t": 120,
+      "phase": "intake",
+      "on_chain_nonce": 27,
+      "relayer_next_nonce": 60,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 22
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 150,
+      "phase": "intake",
+      "on_chain_nonce": 42,
+      "relayer_next_nonce": 75,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 37
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 180,
+      "phase": "intake",
+      "on_chain_nonce": 57,
+      "relayer_next_nonce": 90,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 52
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 210,
+      "phase": "intake",
+      "on_chain_nonce": 72,
+      "relayer_next_nonce": 105,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 67
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 240,
+      "phase": "intake",
+      "on_chain_nonce": 87,
+      "relayer_next_nonce": 120,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 82
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 270,
+      "phase": "intake",
+      "on_chain_nonce": 102,
+      "relayer_next_nonce": 135,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 97
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 300,
+      "phase": "intake",
+      "on_chain_nonce": 117,
+      "relayer_next_nonce": 150,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 112
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 330,
+      "phase": "intake",
+      "on_chain_nonce": 132,
+      "relayer_next_nonce": 165,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 127
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 360,
+      "phase": "intake",
+      "on_chain_nonce": 147,
+      "relayer_next_nonce": 180,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 142
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 390,
+      "phase": "intake",
+      "on_chain_nonce": 162,
+      "relayer_next_nonce": 195,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 157
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 420,
+      "phase": "intake",
+      "on_chain_nonce": 177,
+      "relayer_next_nonce": 210,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 172
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 450,
+      "phase": "intake",
+      "on_chain_nonce": 192,
+      "relayer_next_nonce": 225,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 187
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 480,
+      "phase": "intake",
+      "on_chain_nonce": 207,
+      "relayer_next_nonce": 240,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 202
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 510,
+      "phase": "intake",
+      "on_chain_nonce": 222,
+      "relayer_next_nonce": 255,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 217
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 540,
+      "phase": "intake",
+      "on_chain_nonce": 237,
+      "relayer_next_nonce": 270,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 232
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 570,
+      "phase": "intake",
+      "on_chain_nonce": 252,
+      "relayer_next_nonce": 285,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 33,
+       "submitted": 5,
+       "confirmed": 247
+      },
+      "sent_null_sent_at": 33
+     },
+     {
+      "t": 600,
+      "phase": "intake",
+      "on_chain_nonce": 267,
+      "relayer_next_nonce": 300,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 262
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 630,
+      "phase": "intake",
+      "on_chain_nonce": 282,
+      "relayer_next_nonce": 315,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 277
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 660,
+      "phase": "intake",
+      "on_chain_nonce": 297,
+      "relayer_next_nonce": 330,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 292
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 690,
+      "phase": "intake",
+      "on_chain_nonce": 312,
+      "relayer_next_nonce": 345,
+      "drift": 33,
+      "statuses": {
+       "pending": 1,
+       "sent": 32,
+       "submitted": 6,
+       "confirmed": 307
+      },
+      "sent_null_sent_at": 32
+     },
+     {
+      "t": 750,
+      "phase": "after intake",
+      "on_chain_nonce": 342,
+      "relayer_next_nonce": 360,
+      "drift": 18,
+      "statuses": {
+       "sent": 17,
+       "submitted": 6,
+       "confirmed": 337
+      },
+      "sent_null_sent_at": 17
+     },
+     {
+      "t": 780,
+      "phase": "after intake",
+      "on_chain_nonce": 357,
+      "relayer_next_nonce": 360,
+      "drift": 3,
+      "statuses": {
+       "sent": 2,
+       "submitted": 6,
+       "confirmed": 352
+      },
+      "sent_null_sent_at": 2
+     },
+     {
+      "t": 810,
+      "phase": "after intake",
+      "on_chain_nonce": 360,
+      "relayer_next_nonce": 360,
+      "drift": 0,
+      "statuses": {
+       "confirmed": 360
+      },
+      "sent_null_sent_at": 0
+     }
+    ]
+   }
+  },
+  "808": {
+   "scenario": "808",
+   "issue": "https://github.com/OpenZeppelin/openzeppelin-relayer/issues/808",
+   "title": "gas_price_cap leaves a transaction stuck after a gas spike",
+   "outcome": "reproduces",
+   "summary": "transfer still submitted after 1200 s at a base fee one eighth of the cap, with no broadcast since the spike",
+   "relayer": {
+    "version": "v1.8.0",
+    "image": "openzeppelin/openzeppelin-relayer:v1.8.0@sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "digest": "sha256:a0d8751b065bb269977a91292df8759bc48ffaaecd0a162bda1f96c32c899e77",
+    "service_version": "1.8.0"
+   },
+   "started_at": "2026-11-02T03:09:01Z",
+   "finished_at": "2026-11-02T03:31:16Z",
+   "duration_s": 1335,
+   "log_counts": {
+    "transaction has been pending for too long, resubmitting": 92,
+    "bumped gas price does not meet minimum requirement, skipping resubmission": 92,
+    "transaction not yet mined": 107
+   },
+   "observed": {
+    "final_status": "submitted",
+    "status_reason": null,
+    "first_broadcast": {
+     "status": "submitted",
+     "max_fee_per_gas": "800000000",
+     "max_priority_fee_per_gas": "800000000"
+    },
+    "recovery_seconds": 1200,
+    "sender_nonce_before": 0,
+    "sender_nonce_after": 0,
+    "broadcasts_total": 1,
+    "broadcasts_during_recovery": 0,
+    "anvil_pool_pending_queued": [
+     0,
+     0
+    ]
+   }
+  }
+ }
+}

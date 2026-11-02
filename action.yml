@@ -1,0 +1,74 @@
+name: Nonceworks config check for OpenZeppelin Relayer and Monitor
+description: "Static checks for OpenZeppelin Relayer and Monitor configuration, including the open Relayer issues the lab reproduces. Not affiliated with OpenZeppelin."
+author: Nonceworks
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  path:
+    description: Config directory, ZIP archive or JSON file. Several, one per line, are allowed.
+    default: config
+  strict:
+    description: Fail the step on warnings too.
+    default: "false"
+  ignore:
+    description: Rule ids to skip, comma-separated (see nonceworks-validate --list-rules).
+    default: ""
+  annotations:
+    description: Print findings as GitHub annotations on the files.
+    default: "true"
+  summary:
+    description: Write the report to the job summary.
+    default: "true"
+
+outputs:
+  errors:
+    description: Number of errors found.
+    value: ${{ steps.check.outputs.errors }}
+  warnings:
+    description: Number of warnings found.
+    value: ${{ steps.check.outputs.warnings }}
+  notices:
+    description: Number of notices found.
+    value: ${{ steps.check.outputs.notices }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        IN_PATH: ${{ inputs.path }}
+        IN_STRICT: ${{ inputs.strict }}
+        IN_IGNORE: ${{ inputs.ignore }}
+        IN_ANNOTATIONS: ${{ inputs.annotations }}
+        IN_SUMMARY: ${{ inputs.summary }}
+        PYTHONPATH: ${{ github.action_path }}/validator/src
+      run: |
+        set -euo pipefail
+        command -v python3 >/dev/null || { echo "::error::python3 is required on the runner"; exit 2; }
+        mapfile -t paths < <(printf '%s\n' "$IN_PATH" | sed '/^[[:space:]]*$/d')
+        args=()
+        [ "$IN_STRICT" = "true" ] && args+=(--strict)
+        [ -n "$IN_IGNORE" ] && args+=(--ignore "$IN_IGNORE")
+        [ "$IN_SUMMARY" = "true" ] && args+=(--summary "$GITHUB_STEP_SUMMARY")
+        report="$RUNNER_TEMP/nonceworks-validate.json"
+        rc=0
+        python3 -I -c 'import sys; sys.path.insert(0, sys.argv[1]); from nonceworks_validate.cli import main; sys.exit(main(sys.argv[2:]))' \
+          "$PYTHONPATH" --format json "${args[@]}" "${paths[@]}" >"$report" || rc=$?
+        if [ "$rc" = 2 ]; then cat "$report"; echo "::error::could not read ${paths[*]}"; exit 2; fi
+        if [ "$IN_ANNOTATIONS" = "true" ]; then
+          python3 -I -c 'import sys; sys.path.insert(0, sys.argv[1]); from nonceworks_validate.cli import main; main(sys.argv[2:])' \
+            "$PYTHONPATH" --format github ${IN_IGNORE:+--ignore "$IN_IGNORE"} "${paths[@]}" || true
+        fi
+        python3 -I - "$report" "${#paths[@]}" >>"$GITHUB_OUTPUT" <<'PY'
+        import json, sys
+        doc = json.load(open(sys.argv[1]))
+        reps = [doc] if sys.argv[2] == "1" else list(doc.values())
+        for k in ("error", "warning", "notice"):
+            print(f"{k}s={sum(r['counts'][k] for r in reps)}")
+        PY
+        python3 -I -c 'import sys; sys.path.insert(0, sys.argv[1]); from nonceworks_validate.cli import main; main(sys.argv[2:])' \
+          "$PYTHONPATH" --format text ${IN_IGNORE:+--ignore "$IN_IGNORE"} "${paths[@]}" || true
+        exit "$rc"

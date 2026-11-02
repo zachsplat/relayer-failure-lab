@@ -1,0 +1,61 @@
+{
+  "relayers": [
+    {
+      "id": "payouts",
+      "name": "payouts",
+      "network": "sepolia",
+      "paused": false,
+      "notification_id": "ops",
+      "signer_id": "kms",
+      "network_type": "evm",
+      "policies": {
+        "min_balance": 0,
+        "eip1559_pricing": true,
+        "whitelist_receivers": [
+          "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+        ]
+      }
+    }
+  ],
+  "signers": [
+    {
+      "id": "kms",
+      "type": "aws_kms",
+      "config": {
+        "region": "us-east-1",
+        "key_id": "alias/relayer"
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "id": "ops",
+      "type": "webhook",
+      "url": "https://hooks.example/relayer",
+      "signing_key": {
+        "type": "env",
+        "value": "WEBHOOK_SIGNING_KEY"
+      }
+    }
+  ],
+  "networks": [
+    {
+      "type": "evm",
+      "network": "sepolia",
+      "chain_id": 11155111,
+      "required_confirmations": 1,
+      "symbol": "ETH",
+      "rpc_urls": [
+        "https://rpc-a.example",
+        "https://rpc-b.example"
+      ],
+      "explorer_urls": [],
+      "average_blocktime_ms": 12000,
+      "is_testnet": true,
+      "features": [
+        "eip1559"
+      ]
+    }
+  ],
+  "plugins": []
+}

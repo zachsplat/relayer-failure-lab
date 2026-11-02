@@ -1,0 +1,13 @@
+{
+  "ops-webhook": {
+    "name": "ops",
+    "trigger_type": "webhook",
+    "config": {
+      "url": {
+        "type": "env",
+        "value": "WEBHOOK_URL"
+      },
+      "method": "POST"
+    }
+  }
+}

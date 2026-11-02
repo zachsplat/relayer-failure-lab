@@ -1,0 +1,31 @@
+{
+  "name": "Large transfers",
+  "paused": false,
+  "networks": [
+    "ethereum_sepolia"
+  ],
+  "addresses": [
+    {
+      "address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+    }
+  ],
+  "match_conditions": {
+    "functions": [],
+    "events": [
+      {
+        "signature": "Transfer(address,address,uint256)",
+        "expression": "value > 1000000000"
+      }
+    ],
+    "transactions": [
+      {
+        "status": "Success",
+        "expression": "gas_used > 0"
+      }
+    ]
+  },
+  "trigger_conditions": [],
+  "triggers": [
+    "ops-webhook"
+  ]
+}

@@ -1,0 +1,368 @@
+{
+  "scenario": "843",
+  "issue": "https://github.com/OpenZeppelin/openzeppelin-relayer/issues/843",
+  "title": "Nonce too high jam that recovery never clears",
+  "outcome": "fixed",
+  "summary": "drift between 0 and 0 over the last 300 s of intake after a 60 s send outage",
+  "relayer": {
+    "version": "pr862-on-v1.9.0",
+    "image": "nw-relayer:pr-862-on-v190",
+    "digest": null,
+    "service_version": "1.9.0"
+  },
+  "started_at": "2026-11-02T02:54:17Z",
+  "finished_at": "2026-11-02T03:07:24Z",
+  "duration_s": 787,
+  "log_counts": {
+    "max attempts reached": 35,
+    "no nonce gaps detected": 0,
+    "rewound nonce counter": 0,
+    "nonce gaps confirmed below tx": 0,
+    "reclaiming nonce slots": 0,
+    "nonce too high": 45,
+    "HTTP error 503": 231
+  },
+  "observed": {
+    "submitted": 360,
+    "refused_by_api": 0,
+    "drift_last_window": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "drift_min_last_window": 0,
+    "drift_max_last_window": 0,
+    "queue_empty_seconds_after_intake": 30,
+    "final_statuses": {
+      "confirmed": 360
+    },
+    "final_sent_null_sent_at": 0,
+    "proxy": {
+      "send_raw": 477,
+      "send_ok": 360,
+      "send_503": 99,
+      "send_nonce_too_high": 16,
+      "send_other_error": 2
+    },
+    "samples": [
+      {
+        "t": 30,
+        "phase": "intake",
+        "on_chain_nonce": 15,
+        "relayer_next_nonce": 15,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 11
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 60,
+        "phase": "intake",
+        "on_chain_nonce": 20,
+        "relayer_next_nonce": 30,
+        "drift": 10,
+        "statuses": {
+          "pending": 1,
+          "sent": 10,
+          "confirmed": 20
+        },
+        "sent_null_sent_at": 10
+      },
+      {
+        "t": 90,
+        "phase": "intake",
+        "on_chain_nonce": 20,
+        "relayer_next_nonce": 45,
+        "drift": 25,
+        "statuses": {
+          "pending": 1,
+          "sent": 25,
+          "confirmed": 20
+        },
+        "sent_null_sent_at": 25
+      },
+      {
+        "t": 120,
+        "phase": "intake",
+        "on_chain_nonce": 60,
+        "relayer_next_nonce": 60,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 53,
+          "mined": 3
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 150,
+        "phase": "intake",
+        "on_chain_nonce": 75,
+        "relayer_next_nonce": 75,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 71
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 180,
+        "phase": "intake",
+        "on_chain_nonce": 90,
+        "relayer_next_nonce": 90,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 86
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 210,
+        "phase": "intake",
+        "on_chain_nonce": 105,
+        "relayer_next_nonce": 105,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 101
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 240,
+        "phase": "intake",
+        "on_chain_nonce": 120,
+        "relayer_next_nonce": 120,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 116
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 270,
+        "phase": "intake",
+        "on_chain_nonce": 135,
+        "relayer_next_nonce": 135,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 3,
+          "confirmed": 132
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 300,
+        "phase": "intake",
+        "on_chain_nonce": 150,
+        "relayer_next_nonce": 150,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 146
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 330,
+        "phase": "intake",
+        "on_chain_nonce": 165,
+        "relayer_next_nonce": 165,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 3,
+          "confirmed": 162
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 360,
+        "phase": "intake",
+        "on_chain_nonce": 180,
+        "relayer_next_nonce": 180,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 176
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 390,
+        "phase": "intake",
+        "on_chain_nonce": 195,
+        "relayer_next_nonce": 195,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 191
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 420,
+        "phase": "intake",
+        "on_chain_nonce": 210,
+        "relayer_next_nonce": 210,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 206
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 450,
+        "phase": "intake",
+        "on_chain_nonce": 225,
+        "relayer_next_nonce": 225,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 3,
+          "confirmed": 222
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 480,
+        "phase": "intake",
+        "on_chain_nonce": 240,
+        "relayer_next_nonce": 240,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 236
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 510,
+        "phase": "intake",
+        "on_chain_nonce": 255,
+        "relayer_next_nonce": 255,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 3,
+          "confirmed": 252
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 540,
+        "phase": "intake",
+        "on_chain_nonce": 270,
+        "relayer_next_nonce": 270,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 266
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 570,
+        "phase": "intake",
+        "on_chain_nonce": 285,
+        "relayer_next_nonce": 285,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 281
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 600,
+        "phase": "intake",
+        "on_chain_nonce": 300,
+        "relayer_next_nonce": 300,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 296
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 630,
+        "phase": "intake",
+        "on_chain_nonce": 315,
+        "relayer_next_nonce": 315,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 311
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 660,
+        "phase": "intake",
+        "on_chain_nonce": 330,
+        "relayer_next_nonce": 330,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 3,
+          "confirmed": 327
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 690,
+        "phase": "intake",
+        "on_chain_nonce": 345,
+        "relayer_next_nonce": 345,
+        "drift": 0,
+        "statuses": {
+          "pending": 1,
+          "submitted": 4,
+          "confirmed": 341
+        },
+        "sent_null_sent_at": 0
+      },
+      {
+        "t": 750,
+        "phase": "after intake",
+        "on_chain_nonce": 360,
+        "relayer_next_nonce": 360,
+        "drift": 0,
+        "statuses": {
+          "confirmed": 360
+        },
+        "sent_null_sent_at": 0
+      }
+    ]
+  }
+}

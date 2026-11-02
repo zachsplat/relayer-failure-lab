@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nonceworks-validate"
+version = "1.0.0"
+description = "Static checks for OpenZeppelin Relayer and Monitor configuration"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Nonceworks"}]
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Environment :: Console",
+  "Topic :: Software Development :: Testing",
+]
+
+[project.urls]
+Homepage = "https://github.com/zachsplat/relayer-failure-lab"
+
+[project.scripts]
+nonceworks-validate = "nonceworks_validate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
