@@ -13,7 +13,7 @@ Maintained by Nonceworks. Not affiliated with OpenZeppelin.
 <!-- results:start -->
 | Relayer | #817 double payout | #912 signing policy | #843 nonce jam | #808 gas cap stall | Date | Evidence |
 |---|---|---|---|---|---|---|
-| [v1.9.0](results/v1.9.0.json) | reproduces | reproduces | reproduces | reproduces | 2026-11-02 | local run, 2026-11-02 |
+| [v1.9.0](results/v1.9.0.json) | reproduces | reproduces | reproduces | reproduces | 2026-11-02 | [run](https://github.com/zachsplat/relayer-failure-lab/actions/runs/41385667287) |
 | [v1.8.0](results/v1.8.0.json) | reproduces | reproduces | reproduces | reproduces | 2026-11-02 | local run, 2026-11-02 |
 <!-- results:end -->
 
