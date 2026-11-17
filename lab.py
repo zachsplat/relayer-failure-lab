@@ -125,7 +125,7 @@ def compose_spec(sid, image, tools, work, uid):
     for k, v in os.environ.items():  # scenario parameters, e.g. LAB_843_TOTAL=720 -> TOTAL=720
         if k.startswith(f"LAB_{sid}_"):
             driver_env[k[len(f"LAB_{sid}_"):]] = v
-    return {
+    spec = {
         "name": None,
         "services": {
             "anvil": {"image": FOUNDRY, "entrypoint": ["anvil"], "command": ANVIL_BASE + sc["anvil"]},
@@ -146,6 +146,38 @@ def compose_spec(sid, image, tools, work, uid):
             "driver": {"image": tools, "user": user, "command": ["python", "-u", f"/lab/s{sid}.py"], "environment": driver_env, "volumes": vol},
         },
     }
+    erpc = os.environ.get("LAB_ERPC_IMAGE")
+    if erpc:  # relayer -> eRPC -> {proxy (the faulted provider), proxy2 (a healthy second provider)} -> anvil
+        s = spec["services"]
+        s["proxy2"] = {**s["proxy"], "environment": {**proxy_env, "PROXY_LOG": "/work/logs/proxy2.log"}}
+        s["erpc"] = {"image": erpc, "command": ["/erpc-server", "--config", "/work/erpc.yaml"], "volumes": vol,
+                     "depends_on": ["proxy", "proxy2"]}
+        s["relayer"]["depends_on"] = ["redis", "erpc", "anvil", "receiver"]
+        driver_env.update({"PROXY2_URL": "http://proxy2:8546", "ERPC_METRICS_URL": "http://erpc:4001/metrics"})
+    return spec
+
+
+ERPC_CONFIG = """logLevel: info
+server: {listenV4: true, httpHostV4: 0.0.0.0, httpPortV4: 4000}
+metrics: {enabled: true, listenV4: true, hostV4: 0.0.0.0, port: 4001}
+projects:
+  - id: lab
+    networks:
+      - architecture: evm
+        evm: {chainId: 31337}
+    upstreams:
+      - id: failing
+        endpoint: http://proxy:8546
+        evm: {chainId: 31337}
+      - id: healthy
+        endpoint: http://proxy2:8546
+        evm: {chainId: 31337}
+"""
+# The upstream breaker from eRPC's "survive provider outages" guide; eRPC has none unless configured.
+ERPC_BREAKER = """    upstreamDefaults:
+      failsafe:
+        - circuitBreaker: {failureThresholdCount: 20, failureThresholdCapacity: 80, halfOpenAfter: HALF_OPEN, successThresholdCount: 8}
+"""
 
 
 def run_scenario(sid, version, image, out_dir, work_root):
@@ -155,8 +187,13 @@ def run_scenario(sid, version, image, out_dir, work_root):
     work = work_root / f"{version}-{sid}-{stamp}"
     (work / "logs").mkdir(parents=True)
     (work / "config").mkdir()
-    (work / "config" / "config.json").write_text((ROOT / "scenarios" / sid / "config.json").read_text())
-    for name in ("proxy.log", "webhooks.jsonl", "driver.log"):
+    config = (ROOT / "scenarios" / sid / "config.json").read_text()
+    if os.environ.get("LAB_ERPC_IMAGE"):
+        config = config.replace("http://proxy:8546", "http://erpc:4000/lab/evm/31337")
+    breaker = ERPC_BREAKER.replace("HALF_OPEN", os.environ.get("LAB_ERPC_BREAKER", "")) if os.environ.get("LAB_ERPC_BREAKER") else ""
+    (work / "erpc.yaml").write_text(ERPC_CONFIG + breaker)
+    (work / "config" / "config.json").write_text(config)
+    for name in ("proxy.log", "proxy2.log", "webhooks.jsonl", "driver.log"):
         (work / "logs" / name).touch()
     env = {**os.environ, "LAB_API_KEY": secrets.token_hex(24), "LAB_WEBHOOK_KEY": secrets.token_hex(24),
            "LAB_KEYSTORE_PASSPHRASE": secrets.token_hex(16)}
@@ -176,7 +213,8 @@ def run_scenario(sid, version, image, out_dir, work_root):
                         "-v", f"{work}:/work", tools, "python", "/lab/keystore.py", "/work/config/keys/anvil0.json"],
                        env={**env, "KEYSTORE_PASSPHRASE": env["LAB_KEYSTORE_PASSPHRASE"]}, check=True, capture_output=True)
         say(f"{version} {sc['title']}: starting ({image})", pre)
-        subprocess.run(dc + ["up", "-d", "--quiet-pull", "anvil", "redis", "proxy", "receiver", "relayer"], env=env, check=True,
+        services = ["anvil", "redis", "proxy", "receiver", "relayer"] + (["proxy2", "erpc"] if os.environ.get("LAB_ERPC_IMAGE") else [])
+        subprocess.run(dc + ["up", "-d", "--quiet-pull", *services], env=env, check=True,
                        capture_output=True)
         p = subprocess.Popen(dc + ["run", "--rm", "--no-deps", "-T", "driver"], env=env, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, text=True)
@@ -195,6 +233,9 @@ def run_scenario(sid, version, image, out_dir, work_root):
     except subprocess.CalledProcessError as e:
         result["summary"] = f"setup failed: {' '.join(e.cmd[:4])}... exit {e.returncode}: {(e.stderr or b'')[-300:].decode(errors='replace') if isinstance(e.stderr, bytes) else e.stderr}"
     finally:
+        if os.environ.get("LAB_ERPC_IMAGE"):
+            erpc_logs = subprocess.run(dc + ["logs", "--no-color", "--timestamps", "erpc"], env=env, capture_output=True, text=True)
+            (work / "logs" / "erpc.log").write_text(erpc_logs.stdout + erpc_logs.stderr)
         logs = subprocess.run(dc + ["logs", "--no-color", "--timestamps", "relayer"], env=env, capture_output=True, text=True)
         text = ANSI.sub("", logs.stdout + logs.stderr)
         for k, v in redact.items():

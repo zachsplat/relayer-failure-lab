@@ -26,6 +26,22 @@ import httpx
 
 from labkit import ACCOUNT_1, PROXY, list_txs, log, on_chain_nonce, proxy_stats, submit_transfer, wait_ready, write_result
 
+
+
+def erpc_metrics():
+    """Upstream outcome counters scraped from eRPC's Prometheus endpoint, when eRPC is in front."""
+    url = os.environ.get("ERPC_METRICS_URL")
+    if not url:
+        return None
+    keep = ("erpc_upstream_request_errors_total", "erpc_upstream_request_total", "erpc_upstream_request_skipped_total",
+            "erpc_upstream_breaker_state_change_total", "erpc_network_failed_request_total", "erpc_network_successful_request_total")
+    try:
+        lines = httpx.get(url, timeout=5).text.splitlines()
+    except Exception as e:
+        return {"error": str(e)}
+    return [l for l in lines if l.startswith(keep)][:300]
+
+
 PERIOD = float(os.environ.get("PERIOD", "2"))
 WARMUP = int(os.environ.get("WARMUP", "40"))
 OUTAGE = int(os.environ.get("OUTAGE", "60"))
@@ -67,7 +83,8 @@ def main():
     while time.time() - t0 < TOTAL:
         now = time.time()
         if not outage_opened and now - t0 >= WARMUP:
-            httpx.post(PROXY + "/control", json={"fail_send_for": OUTAGE}, timeout=5)
+            for target in os.environ.get("OUTAGE_PROXIES", PROXY).split(","):
+                httpx.post(target + "/control", json={"fail_send_for": OUTAGE}, timeout=5)
             outage_opened = True
             log(f"--- outage opened: eth_sendRawTransaction answers HTTP 503 for {OUTAGE} s")
         if now >= next_submit:
@@ -104,6 +121,10 @@ def main():
         "final_sent_null_sent_at": sent_null,
         "proxy": {k: stats.get(k) for k in ("send_raw", "send_ok", "send_503", "send_nonce_too_high", "send_other_error")},
         "samples": samples,
+        "proxy_healthy": {k: v for k, v in (httpx.get(os.environ["PROXY2_URL"] + "/stats", timeout=5).json().items())
+                          if k in ("send_raw", "send_ok", "send_503", "send_nonce_too_high", "send_other_error")}
+        if os.environ.get("PROXY2_URL") else None,
+        "erpc_metrics": erpc_metrics(),
     }
     if not tail:
         write_result("inconclusive", "no drift samples in the observation window", observed)
